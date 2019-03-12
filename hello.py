@@ -1,6 +1,6 @@
 from flask import Flask
 from flask import request
-from flask import make_response,redirect,render_template
+from flask import make_response,redirect,render_template,session,redirect,url_for
 from flask_script import Manager
 from flask_bootstrap import Bootstrap
 from flask_moment import Moment
@@ -17,12 +17,11 @@ app.config['SECRET_KEY'] = 'hard to guess string'
 
 @app.route('/',methods = ['GET','POST'])
 def index():
-    name = None
     form = NameForm()
     if form.validate_on_submit():
-        name = form.name.data
-        form.name.data = ''
-    return render_template('index.html',current_time =datetime.utcnow(),form = form,name=name)
+        session['name'] = form.name.data
+        return redirect(url_for('index'))
+    return render_template('index.html',current_time =datetime.utcnow(),form = form,name=session.get('name'))
 
 @app.route('/user/<name>')
 def user(name):
