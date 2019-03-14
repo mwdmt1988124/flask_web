@@ -11,6 +11,7 @@ from wtforms.validators import Required
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate,MigrateCommand
 from flask_mail import Mail,Message
+from threading import Thread
 import os
 
 app = Flask(__name__)
@@ -27,19 +28,26 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_PASSWORD'] = 'ymb1988124'
 app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[民生保险]'
-app.config['FLASKY_MAIL_SENDER'] ='Flasky Admin<136419201602@163.com>'
+app.config['FLASKY_MAIL_SENDER'] ='Flasky Admin<13641920160@163.com>'
 app.config['FLASKY_ADMIN'] = '344054296@qq.com'
 
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 mail = Mail(app)
 
+
 def send_mail(to,subject,template,**kwargs):
     msg =Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX']+subject,
                  sender=app.config['FLASKY_MAIL_SENDER'],recipients=[to])
     msg.body = render_template(template+'.txt',**kwargs)
     msg.html = render_template(template+ '.html',**kwargs)
-    mail.send(msg)
+    thr = Thread(target=send_async_email,args = [app,msg])
+    thr.start()
+    return thr
+
+def send_async_email(app,msg):
+    with app.app_context():
+        mail.send(msg)
 
 def make_shell_context():
     return dict(app = app,db = db , User = User , Role = Role)
