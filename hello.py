@@ -35,7 +35,6 @@ db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 mail = Mail(app)
 
-
 def send_mail(to,subject,template,**kwargs):
     msg =Message(app.config['FLASKY_MAIL_SUBJECT_PREFIX']+subject,
                  sender=app.config['FLASKY_MAIL_SENDER'],recipients=[to])
